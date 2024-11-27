@@ -1,21 +1,34 @@
-from PIL import Image 
-from pytesseract import pytesseract 
+from paddleocr import PaddleOCR, draw_ocr
 
-# Defining paths to tesseract.exe 
-# and the image we would be using 
-path_to_tesseract = r"C:\Program Files\Tesseract-OCRtesseract\tesseract"
-image_path = r"sampletext-660x75.PNG"
+# Initialize the OCR model
+ocr = PaddleOCR(use_angle_cls=True, lang='en')
 
-# Opening the image & storing it in an image object 
-img = Image.open(image_path)  
+# Specify the image path
+image_path = 'imagepath'
 
-# Providing the tesseract executable 
-# location to pytesseract library 
-pytesseract.tesseract_cmd = path_to_tesseract 
+# Perform OCR
+result = ocr.ocr(image_path)
 
-# Passing the image object to image_to_string() function 
-# This function will extract the text from the image 
-text = pytesseract.image_to_string(img) 
+# Print the recognized text
+recognized_text = " ".join(line[1][0] for line in result[0]).split(' ')
+recognized_text = [sub_word for word in recognized_text for sub_word in word.split('-')]
+recognized_text = [sub_word for word in recognized_text for sub_word in word.split('.')]
 
-# Displaying the extracted text 
-print(text[:-1])
+# function to extract words from string
+def separate(start,end):
+  start_index= recognized_text.index(start) + 1
+  end_index= recognized_text.index(end)
+  extracted_data = recognized_text[start_index:end_index]
+  return extracted_data
+
+#assigning the extracted words to var
+sender = separate("from","for")
+reciever = separate("for","ETB")
+transaction_id = separate("transaction","Total")
+amount = separate("Amount","commission")
+amount = amount[1:3]
+
+print(sender)
+print(reciever)
+print(transaction_id)
+print(amount)
