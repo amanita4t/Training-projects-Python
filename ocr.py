@@ -21,14 +21,33 @@ def separate(start,end):
   extracted_data = recognized_text[start_index:end_index]
   return extracted_data
 
-#assigning the extracted words to var
 sender = separate("from","for")
-reciever = separate("for","ETB")
+receiver = separate("for","transaction")
+receiver = receiver[0:3]
 transaction_id = separate("transaction","Total")
 amount = separate("Amount","commission")
 amount = amount[1:3]
 
-print(sender)
-print(reciever)
-print(transaction_id)
-print(amount)
+data_row = {
+    "Sender": " ".join(sender),
+    "receiver": " ".join(receiver),
+    "Transaction ID": transaction_id[0],
+    "Amount": " ".join(amount)
+}
+
+csv_file = 'transaction_data.csv'
+
+file_exists = os.path.isfile(csv_file)
+
+try:
+  with open(csv_file, 'r') as file:
+    is_file_empty = False
+except FileNotFoundError:
+    is_file_empty = True
+
+with open(csv_file, mode = 'a', newline='', encoding='utf-8') as file:
+    writer= csv.DictWriter(file, fieldnames= ["Sender", "receiver", "Transaction ID", "Amount"])
+    if not file_exists or file.tell() == 0:
+        writer.writeheader()
+
+    writer.writerow(data_row)
