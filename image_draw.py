@@ -6,6 +6,7 @@ image_path = "/content/card.png"
 image = Image.open(image_path)
 result = ocr.ocr(image_path)
 
+#targeted word need to be added
 target_word = {
     "M": "Amanuel Tekaling",
     "attending" : "2"
