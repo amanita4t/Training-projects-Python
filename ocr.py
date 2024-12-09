@@ -17,7 +17,8 @@ def is_valid_sheet(sheet, sheet_name):
 
 sheet_name = "user credentials"
 if not is_valid_sheet(sheet, sheet_name):
-  sheet.add_worksheet(title=sheet_name, rows=100, cols=26)
+  new_sheet = sheet.add_worksheet(title=sheet_name, rows=100, cols=26)
+  new_sheet.insert_row(["Email Address", "Password", "User Name"], 1)
 
 def is_valid_email(email):
     #defines a pattern for a valid email
@@ -39,6 +40,20 @@ def password_strength(password):
     else:
         return "weak password!"
 
+def user_creditentials(sheet, email, password, user):
+
+  credentials_sheet = sheet.worksheet("user credentials")
+  credentials_sheet.append_row([email, password, user])
+
+def verify_credentials(sheet, email, password):
+  # Access the 'UserCredentials' sheet
+  credentials_sheet = sheet.worksheet("user credentials")
+  data = credentials_sheet.get_all_values()[1:]  # Get all data Excluding the first row (header)
+  for row in data:
+    if row[0] == email: # Check if the email matches
+      return row[1] == password # Return True if the password matches, False otherwise
+  return False
+
 while True:
     user_type = input("Are you new user? (y/n): ")
     if user_type.isdigit():
@@ -55,7 +70,13 @@ def user_acess():
         username = input("please input your email address: ")
         while True:
             if is_valid_email(username):
-                break
+              emails = sheet.worksheet("user credentials")
+              rows = emails.get_all_values()
+              for row in rows[1:]:
+                if username == row[0]:
+                  print("Account already exists with this email")
+                else:
+                  break
             else:
                 print("The email address is invalid.")
             username = input("Please provide a valid email address: ")
@@ -74,22 +95,33 @@ def user_acess():
                 user = input("Username: ")
                 if not is_valid_sheet(sheet, user):
                   sheet.add_worksheet(title=user, rows=100, cols=26)
+                  user_creditentials(sheet, username, password, user)
                   print("you have signed up sucessfuly!")
                   break
                 else:
                   print("Username already taken!")
-                #append password and email address
-
-                #add a new sheet
-
               break
             else:
                     print("Password doesn't match correctly")
 
     else:
+      while True:
         username = input("input your email address to signin: ")
         password = input("input your password: ")
-user_acess()
+        if verify_credentials(sheet, username, password):
+          credential_sheet = sheet.worksheet("user credentials")
+          rows = credential_sheet.get_all_values()
+          for row in rows[1:]:
+            if row[0] == username:
+              user = row[2]
+          break
+        else:
+          print("wrong Email or Password. Try again")
+    user_sheet = sheet.worksheet(user)
+    return user
+  #There must be users access
+user = user_acess()
+
 
 # Initialize the OCR model
 ocr = PaddleOCR(use_angle_cls=True, lang='en')
@@ -130,15 +162,16 @@ data_row = {
     "Amount": " ".join(amount),
     "Date": " ".join(date)
 }
-
-all_rows = worksheet.get_all_values()
+print(data_row)
+live_sheet = sheet.worksheet(user)
+all_rows = live_sheet.get_all_values()
 if len(all_rows) == 0 or all_rows[0] != ["Sender", "Receiver", "Transaction ID", "Amount", "Date"]:
-    worksheet.insert_row(["Sender", "Receiver", "Transaction ID", "Amount", "Date"], 1)
+    live_sheet.insert_row(["Sender", "Receiver", "Transaction ID", "Amount", "Date"], 1)
 
-transaction_ids = worksheet.col_values(3)
+transaction_ids = live_sheet.col_values(3)
 if data_row["Transaction ID"] not in transaction_ids:
 
-  worksheet.append_row([
+  live_sheet.append_row([
       data_row["Sender"],
       data_row["receiver"],
       data_row["Transaction ID"],
