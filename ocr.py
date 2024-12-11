@@ -3,11 +3,11 @@ import gspread
 from google.oauth2.service_account import Credentials
 import re
 
-SERVICE_ACCOUNT_FILE = '/content/ocr-443522-26fb8021aad9.json'
-SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
+SERVICE_ACCOUNT_FILE = 'json_file'
+SCOPES = ["scopes"]
 credentials = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
 gc = gspread.authorize(credentials)
-sheet_url = 'https://docs.google.com/spreadsheets/d/1H3yj08wdZdHulyWeExMtuO8lhwjq9R2VQgbAvlK7ygA/edit?usp=sharing'
+sheet_url = 'master sheet url'
 sheet = gc.open_by_url(sheet_url)
 worksheet = sheet.sheet1
 
@@ -19,6 +19,14 @@ sheet_name = "user credentials"
 if not is_valid_sheet(sheet, sheet_name):
   new_sheet = sheet.add_worksheet(title=sheet_name, rows=100, cols=26)
   new_sheet.insert_row(["Email Address", "Password", "User Name"], 1)
+
+def is_transaction_id_unique(sheet, transaction_id):
+  worksheets = sheet.worksheets() #get all sheets
+  for worksheet in worksheets:
+    transaction_ids = worksheet.col_values(3)
+    if transaction_id in transaction_ids:
+      return False #Transaction already exists
+  return True #Transaction is unique
 
 def is_valid_email(email):
     #defines a pattern for a valid email
@@ -169,8 +177,7 @@ if len(all_rows) == 0 or all_rows[0] != ["Sender", "Receiver", "Transaction ID",
     live_sheet.insert_row(["Sender", "Receiver", "Transaction ID", "Amount", "Date"], 1)
 
 transaction_ids = live_sheet.col_values(3)
-if data_row["Transaction ID"] not in transaction_ids:
-
+if is_transaction_id_unique(sheet, transaction_id):
   live_sheet.append_row([
       data_row["Sender"],
       data_row["receiver"],
