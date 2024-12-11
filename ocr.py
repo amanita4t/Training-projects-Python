@@ -135,7 +135,7 @@ user = user_acess()
 ocr = PaddleOCR(use_angle_cls=True, lang='en')
 
 # Specify the image path
-image_path = '/content/cbe.jpg'
+image_path = 'Image path'
 
 # Perform OCR
 result = ocr.ocr(image_path)
