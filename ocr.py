@@ -34,6 +34,7 @@ def is_valid_email(email):
     #Check if the pattern match or not
     return re.match(pattern, email) is not None
 
+#checks for password strength
 def password_strength(password):
     length_rule = len(password) >= 8
     uppercase_rule = bool(re.search(r'[A-Z]', password))
