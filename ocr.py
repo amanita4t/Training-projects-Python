@@ -48,7 +48,7 @@ def password_strength(password):
         return "moderate password!"
     else:
         return "weak password!"
-
+#add new user creditentials 
 def user_creditentials(sheet, email, password, user):
 
   credentials_sheet = sheet.worksheet("user credentials")
