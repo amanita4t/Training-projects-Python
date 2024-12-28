@@ -5,7 +5,7 @@ from tkinter import Tk, Label, Button, StringVar, Radiobutton, Canvas
 
 # Load questions from the JSON file
 def read_data():
-    with open("OCR/quiz/question.json", "r") as file:
+    with open("question.json", "r") as file:
         data = json.load(file)
     return data
 
@@ -153,7 +153,7 @@ class QuizApp:
 
         Button(self.master, text="Close", command=self.master.destroy, font=("Arial", 14), bg="#e74c3c", fg="white").pack(pady=10)
 
-# Main Function to Run the Quiz App
+# Run the Quiz App using main function
 def main():
     data = read_data()
     root = Tk()
