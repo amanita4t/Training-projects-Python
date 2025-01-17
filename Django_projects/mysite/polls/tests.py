@@ -19,11 +19,41 @@ class QuestionModelTests(TestCase):
 
 def create_question(question_text, days):
     time = timezone.now() + datetime.timedelta(days=days)
-    return Question.objects.create(question_text=question_text, pub_date = days)
+    return Question.objects.create(question_text=question_text, pub_date = time)
 
 class QuestionIndexViewTests(TestCase):
-    def Test_no_question(self):
-        response = self.client(reverse("polls:index"))
+    def test_no_question(self):
+        response = self.client.get(reverse("polls:index"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "No polls are available.")
         self.assertQuerySetEqual(response.context["latest_question_list"], [])
+    
+    def test_past_question(self):
+        question = create_question(question_text="past question", days= -30)
+        response = self.client.get(reverse("polls:index"))
+        self.assertQuerySetEqual(response.context["latest_question_list"], [question],)
+
+    def test_future_question(self):
+        create_question(question_text="Future queston", days = 30)
+        response = self.client.get(reverse("polls:index"))
+        self.assertContains(response, "No polls are available.")
+        self.assertQuerySetEqual(response.context["latest_question_list"], [])
+
+    def test_future_question_and_past_question(self):
+        question = create_question(question_text="past_question", days=-30)
+        create_question(question_text="Future_question", days=30)
+        response = self.client.get(reverse("polls:index"))
+        self.assertQuerySetEqual(response.context["latest_question_list"], [question])
+
+    def test_two_past_questions(self):
+        question1 = create_question(question_text="past question 1", days = -30)
+        question2 = create_question(question_text="past question 2", days= -5)
+        response = self.client.get(reverse("polls:index"))
+        self.assertQuerySetEqual(response.context["latest_question_list"], [question2, question1])
+
+class QuestionDetailViewTests(TestCase):
+
+    def test_future_question(self):
+
+        future_question = create_question(question_text="future_question", days=5)
+        url = reverse("polls:detail", args= (future_question.id,))
